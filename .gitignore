@@ -1,12 +1,15 @@
 ############################
 # ASP.NET Core / .NET
 ############################
+appsettings.json
+appsettings.Development.json
 bin/
 obj/
 .vs/
 *.user
 *.suo
 *.rsuser
+
 
 # EF Core migrations designer files (optional)
 Migrations/*.Designer.cs
