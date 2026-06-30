@@ -1,7 +1,6 @@
 ############################
 # ASP.NET Core / .NET
 ############################
-appsettings.json
 appsettings.Development.json
 bin/
 obj/
