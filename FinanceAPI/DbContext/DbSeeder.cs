@@ -25,6 +25,7 @@ public static class DbSeeder
             context.Users.Add(new UserModel
             {
                 Name = "Test User",
+                Balance = 4985.15m,
                 CreatedAt = DateTime.UtcNow
             });
 

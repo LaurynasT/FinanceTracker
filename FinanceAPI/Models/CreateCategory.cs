@@ -1,13 +1,9 @@
 using System.Text.Json.Serialization;
 
-public enum CategoryType
+
+public class CreateCategory
 {
-    Income,
-    Expense
-}
-public class Category
-{
-    public int Id { get; set; }
+
     public string Name { get; set; } = string.Empty;
     [JsonConverter(typeof(JsonStringEnumConverter))]
     public CategoryType Type { get; set; }

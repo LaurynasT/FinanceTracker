@@ -1,5 +1,7 @@
 
-public class Transaction
+using System.Text.Json.Serialization;
+
+public class TransactionDTO
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -7,12 +9,6 @@ public class Transaction
     public string Description { get; set; } = string.Empty;
     public decimal Amount { get; set; }
     public DateTime Date { get; set;}
-
-    public int UserId { get; set; }
-    public UserModel? User { get; set; }
-    
-    public int CategoryId { get; set; }
-    
-    public Category Category { get; set; } = null!;
+    public Category Category {get; set;}
 
 }

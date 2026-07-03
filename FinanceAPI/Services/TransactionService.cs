@@ -1,0 +1,145 @@
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace Services
+{
+    public class TransactionService : ITransactionService
+    {
+        private readonly AppDbContext _context;
+
+        public TransactionService(AppDbContext context)
+        {
+            _context = context;
+        }
+        public async Task<List<TransactionDTO>> GetTransactions(int userId)
+        {
+            var userExists = await _context.Users.AnyAsync(u => u.Id == userId);
+
+            if (!userExists)
+            {
+                throw new Exception("User not found");
+            }
+
+            var transactions = await _context.Transactions
+            .Include(t => t.Category)
+                .Where(t => t.UserId == userId)
+                 .Select(t => new TransactionDTO
+                 {
+                     Id = t.Id,
+                     Name = t.Name,
+                     Description = t.Description,
+                     Amount = t.Amount,
+                     Date = t.Date,
+                     Category = t.Category
+                 })
+                    .ToListAsync();
+
+            if (transactions.Count == 0)
+            {
+                throw new Exception("User has no transactions");
+            }
+
+            return transactions;
+        }
+
+        public async Task DeleteTransaction(int id)
+        {
+            var transaction = await _context.Transactions.SingleOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Transaction not found");
+            _context.Transactions.Remove(transaction);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Transaction> CreateTransaction(CreateTransaction newTransaction)
+        {
+            if (string.IsNullOrWhiteSpace(newTransaction.Name))
+                throw new Exception("Name is required");
+
+            if (newTransaction.Amount <= 0)
+                throw new Exception("Transaction ammount must be greater than 0");
+
+            var category = await _context.Categories.FindAsync(newTransaction.CategoryId)
+                ?? throw new Exception("Category not found");
+
+            var userExists = await _context.Users.AnyAsync(u => u.Id == newTransaction.UserId);
+            if (!userExists)
+                throw new Exception("User not found");
+
+            if (category.Type == CategoryType.Expense)
+            {
+                var currentBalance = await GetCurrentBalanceAsync(newTransaction.UserId);
+                if (currentBalance < newTransaction.Amount)
+                    throw new Exception("Not enough balance for this transaction");
+            }
+
+            Transaction transaction = new()
+            {
+                Name = newTransaction.Name,
+                Amount = newTransaction.Amount,
+                Date = DateTime.SpecifyKind(newTransaction.Date, DateTimeKind.Utc),
+                Description = newTransaction.Description,
+                UserId = newTransaction.UserId,
+                CategoryId = newTransaction.CategoryId
+
+            };
+            _context.Transactions.Add(transaction);
+            await _context.SaveChangesAsync();
+            return transaction;
+        }
+        public async Task<decimal> GetCurrentBalanceAsync(int userId)
+        {
+            var user = await _context.Users.FindAsync(userId);
+
+            var transactionsTotal = await _context.Transactions
+                .Include(t => t.Category)
+                .Where(t => t.UserId == userId)
+                .SumAsync(t => t.Category.Type == CategoryType.Income
+                    ? t.Amount
+                    : -t.Amount);
+
+            return user!.Balance + transactionsTotal;
+        }
+
+        public async Task<Transaction> UpdateTransaction(CreateTransaction updateTransaction, int id)
+        {
+
+            if (updateTransaction.Amount <= 0)
+                throw new Exception("Transaction ammount must be greater than 0");
+
+            var category = await _context.Categories.FindAsync(updateTransaction.CategoryId)
+                ?? throw new Exception("Category not found");
+
+            var userExists = await _context.Users.AnyAsync(u => u.Id == updateTransaction.UserId);
+            if (!userExists)
+                throw new Exception("User not found");
+
+            if (category.Type == CategoryType.Expense)
+            {
+                var currentBalance = await GetCurrentBalanceAsync(updateTransaction.UserId);
+                var oldTransaction = await _context.Transactions
+                    .Include(t => t.Category)
+                    .SingleOrDefaultAsync(t => t.Id == id)
+                    ?? throw new Exception("Transaction not found");
+
+                var balanceWithoutOldTransaction = oldTransaction.Category.Type == CategoryType.Expense
+                    ? currentBalance + oldTransaction.Amount   
+                    : currentBalance - oldTransaction.Amount;  
+
+                if (balanceWithoutOldTransaction < updateTransaction.Amount)
+                    throw new Exception("Not enough balance for this transaction");
+            }
+            var transaction = await _context.Transactions.SingleOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Transaction not found");
+
+            transaction.Name = updateTransaction.Name;
+            transaction.Amount = updateTransaction.Amount;
+            transaction.Description = updateTransaction.Description;
+            transaction.CategoryId = updateTransaction.CategoryId;
+
+            await _context.SaveChangesAsync();
+            return transaction;
+        }
+
+    }
+
+
+}
