@@ -5,6 +5,7 @@ import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
 import Modal from "../Modal/Modal";
 import CreateUser from "./CreateUser";
+import { useNotificationStore } from "../../store/ErrorStore";
 
 export default function User() {
   type ModalType = "edit" | "delete" | "create" | null;
@@ -14,6 +15,9 @@ export default function User() {
   const [openModal, setOpenModal] = useState<ModalType>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
+const { showSuccess, showError } = useNotificationStore();
+
+
   async function loadUsers() {
     try {
       const data = await fetchData<User[]>("/users", undefined, {});
@@ -21,8 +25,10 @@ export default function User() {
       if (data.length > 0) {
         setSelectedUserId(data[0].id);
       }
+
+        showSuccess("Fetched!");
     } catch {
-      setError("Failed to fetch");
+      showError("Failed to fetch");
     }
   }
 

@@ -1,6 +1,7 @@
 import { postData } from "../../services/Api";
 import type { User } from "../../Interfaces/User";
 import React from "react";
+import { useNotificationStore } from "../../store/ErrorStore";
 
 type Props = {
   user: User | null;
@@ -11,6 +12,7 @@ type Props = {
 export default function CreateUser({ user, onCancel, onCreated }: Props) {
   const [value, setValue] = React.useState<string>('')
   const [balanceValue, setBalanceValue] = React.useState<number>(0)
+  const { showSuccess, showError } = useNotificationStore();
   if (!user) return null;
   async function createUser() {
     if (!user) return;
@@ -20,8 +22,9 @@ export default function CreateUser({ user, onCancel, onCreated }: Props) {
       formData.append("balance", String(balanceValue));
       await postData<User>(`/users/create`, formData);
       await onCreated();
+      showSuccess("Created")
     } catch (err) {
-      console.error("Failed to create user", err);
+      showError("Failed to create user");
     }
   }
   return (
