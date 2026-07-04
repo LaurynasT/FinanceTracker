@@ -22,7 +22,7 @@ namespace Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateCategory(CreateCategory newCategory)
+        public async Task<IActionResult> CreateCategory([FromForm] CreateCategory newCategory)
         {
             try{
             var categories = await _categoryService.CreateCategory(newCategory);
@@ -34,7 +34,7 @@ namespace Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromBody]CreateCategory updateCategory)
+        public async Task<IActionResult> UpdateCategory(int id, [FromForm] CreateCategory updateCategory)
         {
             try{
             var categories = await _categoryService.UpdateCategory(id, updateCategory);

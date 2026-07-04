@@ -44,7 +44,7 @@ namespace Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateTransaction(CreateTransaction newTransaction)
+        public async Task<IActionResult> CreateTransaction( [FromForm] CreateTransaction newTransaction)
         {
             try
             {
@@ -72,7 +72,7 @@ namespace Controllers
         }
 
          [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTransaction( int id, [FromBody] CreateTransaction updateTransaction)
+        public async Task<IActionResult> UpdateTransaction( int id, [FromForm] CreateTransaction updateTransaction)
         { 
             try{
             await _transactionService.UpdateTransaction(updateTransaction, id);

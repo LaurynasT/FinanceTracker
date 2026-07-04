@@ -37,7 +37,7 @@ namespace Controllers
         }
 
         [HttpPost("create")]
-        public async Task<IActionResult> CreateUser(CreateUser newUser)
+        public async Task<IActionResult> CreateUser([FromForm] CreateUser newUser)
         {
             try
             {
@@ -50,7 +50,7 @@ namespace Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser( int id, [FromBody] CreateUser updateUser)
+        public async Task<IActionResult> UpdateUser( int id, [FromForm] CreateUser updateUser)
         { 
             try{
             await _userService.UpdateUser(updateUser, id);

@@ -15,7 +15,7 @@ namespace Services
         }
         public async Task<List<UserModel>> GetUsers()
         {
-            return await _context.Users.ToListAsync();
+            return await _context.Users.OrderBy(u => u.Id).ToListAsync();
         }
 
         public async Task DeleteUser(int id)
