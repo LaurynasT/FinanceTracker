@@ -11,7 +11,7 @@ export default function User() {
   type ModalType = "edit" | "delete" | "create" | null;
 
   const [users, setUsers] = useState<User[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  
   const [openModal, setOpenModal] = useState<ModalType>(null);
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 

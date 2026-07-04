@@ -11,9 +11,16 @@ namespace Services
         {
             _context = context;
         }
-        public async Task<List<Category>> GetCategories()
+        public async Task<List<Category>> GetCategories([FromQuery] CategoryType? type)
         {
-            return await _context.Categories.ToListAsync();
+            var query = _context.Categories.AsQueryable();
+
+            if (type.HasValue)
+            {
+                query = query.Where(c => c.Type == type);
+            }
+
+            return await query.OrderBy(c => c.Id).ToListAsync();
         }
 
         public async Task DeleteCategory(int id)
@@ -37,8 +44,8 @@ namespace Services
 
             Category category = new()
             {
-              Name = newCategory.Name,
-              Type = newCategory.Type,  
+                Name = newCategory.Name,
+                Type = newCategory.Type,
             };
 
             _context.Categories.Add(category);
@@ -50,7 +57,7 @@ namespace Services
         public async Task<Category> UpdateCategory(int id, CreateCategory updateCategory)
         {
             var category = await _context.Categories.SingleOrDefaultAsync(u => u.Id == id) ?? throw new Exception("Category not found");
-             if (string.IsNullOrWhiteSpace(updateCategory.Name))
+            if (string.IsNullOrWhiteSpace(updateCategory.Name))
                 throw new Exception("Name is required");
 
             var nameTaken = await _context.Categories

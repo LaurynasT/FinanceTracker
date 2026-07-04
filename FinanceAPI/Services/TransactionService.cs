@@ -24,6 +24,7 @@ namespace Services
             var transactions = await _context.Transactions
             .Include(t => t.Category)
                 .Where(t => t.UserId == userId)
+                 .OrderBy(t => t.Date)
                  .Select(t => new TransactionDTO
                  {
                      Id = t.Id,

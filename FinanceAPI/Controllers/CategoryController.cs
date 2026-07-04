@@ -15,9 +15,9 @@ namespace Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetCategories()
+        public async Task<IActionResult> GetCategories([FromQuery] CategoryType? type)
         {
-            var categories = await _categoryService.GetCategories();
+            var categories = await _categoryService.GetCategories(type);
             return Ok(categories);
         }
 
