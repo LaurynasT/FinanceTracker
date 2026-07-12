@@ -1,5 +1,6 @@
-import { deleteData } from "../../services/Api";
 import type { User } from "../../Interfaces/User";
+import { deleteUser } from "../../services/userService";
+import { useNotificationStore } from "../../store/ErrorStore";
 
 type Props = {
   user: User | null;
@@ -8,16 +9,14 @@ type Props = {
 };
 
 export default function DeleteUser({ user, onCancel, onDeleted }: Props) {
+  const {showSuccess} = useNotificationStore();
   if (!user) return null;
 
   async function handleDelete() {
     if (!user) return;
-    try {
-      await deleteData(`/users/${user.id}`);
+      await deleteUser(user.id);
       await onDeleted(); 
-    } catch (err) {
-      console.error("Failed to delete user", err);
-    }
+      showSuccess(`User ${user.name} was deleted`)
   }
 
   return (

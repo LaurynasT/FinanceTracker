@@ -16,13 +16,6 @@ export default function Modal({ open, onClose, children }: Props) {
         className="bg-white rounded-lg p-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <button
-          onClick={onClose}
-          className="mb-2 bg-red-700 text-white px-2 py-1 rounded"
-        >
-          Close
-        </button>
-
         {children}
       </div>
     </div>

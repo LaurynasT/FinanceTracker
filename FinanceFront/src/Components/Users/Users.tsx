@@ -1,36 +1,36 @@
-import { fetchData } from "../../services/Api";
-import React, { useEffect, useState } from "react";
+
+import { useEffect, useState } from "react";
 import type { User } from "../../Interfaces/User";
 import DeleteUser from "./DeleteUser";
 import EditUser from "./EditUser";
 import Modal from "../Modal/Modal";
 import CreateUser from "./CreateUser";
-import { useNotificationStore } from "../../store/ErrorStore";
+import { useUserStore } from "../../store/UserStore";
+import { fetchUsers } from "../../services/userService";
 
 export default function User() {
   type ModalType = "edit" | "delete" | "create" | null;
-
   const [users, setUsers] = useState<User[] | null>(null);
-  
   const [openModal, setOpenModal] = useState<ModalType>(null);
-  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
-
-const { showSuccess, showError } = useNotificationStore();
+  const { selectedUserId, setSelectedUserId } = useUserStore();
 
 
   async function loadUsers() {
-    try {
-      const data = await fetchData<User[]>("/users", undefined, {});
-      setUsers(data);
-      if (data.length > 0) {
-        setSelectedUserId(data[0].id);
-      }
+  const data = await fetchUsers();
+  setUsers(data);
 
-        showSuccess("Fetched!");
-    } catch {
-      showError("Failed to fetch");
-    }
+  const userStillExists = data.some(
+    (user) => user.id === selectedUserId
+  );
+
+  if (!userStillExists && data.length > 0) {
+    setSelectedUserId(data[0].id);
   }
+
+  if (data.length === 0) {
+    setSelectedUserId(null);
+  }
+}
 
   useEffect(() => {
     loadUsers();
@@ -46,13 +46,16 @@ const { showSuccess, showError } = useNotificationStore();
         onChange={(e) => setSelectedUserId(Number(e.target.value))}
       >
         {users?.map((user) => (
-          <option key={user.id} value={user.id}>
+          <option key={user.id} value={user.id} className="text-black">
             {user.name}
           </option>
         ))}
       </select>
 
-      <button className="ml-2 bg-green-400 w-25 border rounded-sm border-solid"  onClick={() => setOpenModal("create")}>
+      <button
+        className="ml-2 bg-green-400 w-25 border rounded-sm border-solid"
+        onClick={() => setOpenModal("create")}
+      >
         Add User
       </button>
       <button
@@ -69,7 +72,7 @@ const { showSuccess, showError } = useNotificationStore();
         Delete User
       </button>
 
-        <Modal open={openModal === "create"} onClose={() => setOpenModal(null)}>
+      <Modal open={openModal === "create"} onClose={() => setOpenModal(null)}>
         <CreateUser
           user={selectedUser}
           onCancel={() => setOpenModal(null)}

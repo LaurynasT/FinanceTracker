@@ -1,12 +1,21 @@
 import axios from 'axios'
+import { httpErrorHandler } from '../composables/errorHandling';
 
-const BASE_URL = import.meta.env.VITE_APP_REACT_BASE_URL;
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL: BASE_URL,
   timeout: 5000,
 })
 
+axiosInstance.interceptors.response.use(
+    response => response,
+    error => {
+        console.log("Axios error:", error);
+        httpErrorHandler(error);
+        return Promise.reject(error);
+    }
+);
 export const fetchData = async <T>(
     endpoint: string,
     pathParam?: number | string,
@@ -20,7 +29,7 @@ export const fetchData = async <T>(
 export const deleteData = async <T>(
     endpoint: string,
 ) : Promise<T> => {
-    const url =  `${endpoint}/`
+    const url =  `${endpoint}`
     const response = await axiosInstance.delete<T>(url)
     return response.data;
 }

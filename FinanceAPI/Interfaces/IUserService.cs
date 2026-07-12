@@ -1,7 +1,7 @@
 public interface IUserService
 {
-    Task<List<UserModel>> GetUsers();
+    Task<List<UserDTO>> GetUsers();
     Task DeleteUser(int id);
-    Task<UserModel> CreateUser(CreateUser newUser);
-    Task<UserModel> UpdateUser(CreateUser updateUser, int id);
+    Task<UserDTO> CreateUser(CreateUser newUser);
+    Task<UserDTO> UpdateUser(UpdateUserDTO updateUser, int id);
 }

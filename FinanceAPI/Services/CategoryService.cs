@@ -11,7 +11,7 @@ namespace Services
         {
             _context = context;
         }
-        public async Task<List<Category>> GetCategories([FromQuery] CategoryType? type)
+        public async Task<List<CategoryDTO>> GetCategories([FromQuery] CategoryType? type)
         {
             var query = _context.Categories.AsQueryable();
 
@@ -20,17 +20,38 @@ namespace Services
                 query = query.Where(c => c.Type == type);
             }
 
-            return await query.OrderBy(c => c.Id).ToListAsync();
+            return await query
+            .AsNoTracking()
+            .OrderBy(c => c.Id)
+            .Select(c => new CategoryDTO
+            {
+                Id = c.Id,
+                Name = c.Name,
+                Type = c.Type,
+            })
+            .ToListAsync();
         }
-
+        public async Task<CategoryDTO?> GetCategoryById(int id)
+        {
+            return await _context.Categories
+                .AsNoTracking()
+                .Where(c => c.Id == id)
+                .Select(c => new CategoryDTO
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Type = c.Type,
+                })
+                .FirstOrDefaultAsync();
+        }
         public async Task DeleteCategory(int id)
         {
             var category = await _context.Categories.SingleOrDefaultAsync(c => c.Id == id) ?? throw new Exception("Category not found");
             _context.Categories.Remove(category);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<Category> CreateCategory(CreateCategory newCategory)
+        public async Task<CategoryDTO> CreateCategory(CreateCategory newCategory)
         {
 
             if (string.IsNullOrWhiteSpace(newCategory.Name))
@@ -51,17 +72,22 @@ namespace Services
             _context.Categories.Add(category);
             await _context.SaveChangesAsync();
 
-            return category;
+            return new CategoryDTO
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Type = category.Type,
+            };
         }
 
-        public async Task<Category> UpdateCategory(int id, CreateCategory updateCategory)
+        public async Task<CategoryDTO> UpdateCategory(int id, UpdateCategory updateCategory)
         {
-            var category = await _context.Categories.SingleOrDefaultAsync(u => u.Id == id) ?? throw new Exception("Category not found");
+            var category = await _context.Categories.SingleOrDefaultAsync(c => c.Id == id) ?? throw new Exception("Category not found");
             if (string.IsNullOrWhiteSpace(updateCategory.Name))
                 throw new Exception("Name is required");
 
             var nameTaken = await _context.Categories
-                .AnyAsync(c => c.Name == updateCategory.Name);
+                .AnyAsync(c => c.Name == updateCategory.Name && c.Id != id);
 
             if (nameTaken)
                 throw new Exception("A category with this name already exists");
@@ -69,7 +95,12 @@ namespace Services
             category.Name = updateCategory.Name;
 
             await _context.SaveChangesAsync();
-            return category;
+            return new CategoryDTO
+            {
+                Id = category.Id,
+                Name = category.Name,
+                Type = category.Type,
+            };
         }
     }
 

@@ -34,7 +34,7 @@ namespace Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategory(int id, [FromForm] CreateCategory updateCategory)
+        public async Task<IActionResult> UpdateCategory(int id, [FromForm] UpdateCategory updateCategory)
         {
             try{
             var categories = await _categoryService.UpdateCategory(id, updateCategory);
@@ -43,6 +43,12 @@ namespace Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetCategoryById(int id)
+        {
+            var categories = await _categoryService.GetCategoryById(id);
+            return Ok(categories);
         }
 
     }

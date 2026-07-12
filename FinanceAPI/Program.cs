@@ -25,6 +25,7 @@ using (var scope = app.Services.CreateScope())
     DbSeeder.Seed(context);       
 }
 app.UseCors(builder => builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
+app.MapOpenApi();
 app.MapControllers();
 app.Run();
 

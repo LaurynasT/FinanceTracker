@@ -3,3 +3,6 @@
 button {
   cursor: pointer;
 }
+body {
+  font-family: "Inter", system-ui, sans-serif;
+}

@@ -50,7 +50,7 @@ namespace Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser( int id, [FromForm] CreateUser updateUser)
+        public async Task<IActionResult> UpdateUser( int id, [FromForm] UpdateUserDTO updateUser)
         { 
             try{
             await _userService.UpdateUser(updateUser, id);

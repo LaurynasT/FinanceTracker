@@ -2,8 +2,9 @@ using Npgsql.PostgresTypes;
 
 public interface ICategoryService
 {
-    Task<List<Category>> GetCategories(CategoryType? type);
+    Task<List<CategoryDTO>> GetCategories(CategoryType? type);
     Task DeleteCategory(int id);
-    Task<Category> CreateCategory(CreateCategory newCategory);
-    Task<Category> UpdateCategory(int id, CreateCategory newCategory);
+    Task<CategoryDTO> CreateCategory(CreateCategory newCategory);
+    Task<CategoryDTO> UpdateCategory(int id, UpdateCategory updateCategory);
+    Task<CategoryDTO> GetCategoryById(int id);
 }

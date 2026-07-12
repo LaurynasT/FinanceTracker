@@ -49,7 +49,7 @@ namespace Controllers
             try
             {
                 var created = await _transactionService.CreateTransaction(newTransaction);
-                return CreatedAtAction(nameof(GetTransactions), new { userId = created.UserId }, created);
+                return Ok(created);
             }
             catch (Exception ex)
             {
@@ -72,7 +72,7 @@ namespace Controllers
         }
 
          [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTransaction( int id, [FromForm] CreateTransaction updateTransaction)
+        public async Task<IActionResult> UpdateTransaction( int id, [FromForm] UpdateTransaction updateTransaction)
         { 
             try{
             await _transactionService.UpdateTransaction(updateTransaction, id);

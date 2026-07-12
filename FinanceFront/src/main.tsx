@@ -1,13 +1,18 @@
 import { StrictMode } from 'react'
-import { createRoot } from 'react-dom/client'
-import User from './Components/Users/Users'
 import './index.css'
 import NotificationList from './Components/Notification/NotificationList'
+import ReactDOM from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import Homepage from './pages/Homepage'
+import Navbar from './Components/Navbar/Navbar';
 
 
-createRoot(document.getElementById('root')!).render(
+ReactDOM.createRoot(document.getElementById('root')!).render(
   <StrictMode>
+    <BrowserRouter>
     <NotificationList/>
-    <User/>
+    <Navbar/>
+    <Homepage/>
+    </BrowserRouter>
   </StrictMode>,
 )

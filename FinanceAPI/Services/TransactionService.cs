@@ -22,7 +22,7 @@ namespace Services
             }
 
             var transactions = await _context.Transactions
-            .Include(t => t.Category)
+            .AsNoTracking()
                 .Where(t => t.UserId == userId)
                  .OrderBy(t => t.Date)
                  .Select(t => new TransactionDTO
@@ -32,7 +32,12 @@ namespace Services
                      Description = t.Description,
                      Amount = t.Amount,
                      Date = t.Date,
-                     Category = t.Category
+                     Category = new CategoryDTO
+                     {
+                         Id = t.Category.Id,
+                         Name = t.Category.Name,
+                         Type = t.Category.Type
+                     }
                  })
                     .ToListAsync();
 
@@ -51,7 +56,7 @@ namespace Services
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Transaction> CreateTransaction(CreateTransaction newTransaction)
+        public async Task<TransactionDTO> CreateTransaction(CreateTransaction newTransaction)
         {
             if (string.IsNullOrWhiteSpace(newTransaction.Name))
                 throw new Exception("Name is required");
@@ -77,7 +82,7 @@ namespace Services
             {
                 Name = newTransaction.Name,
                 Amount = newTransaction.Amount,
-                Date = DateTime.SpecifyKind(newTransaction.Date, DateTimeKind.Utc),
+                Date = DateTime.UtcNow,
                 Description = newTransaction.Description,
                 UserId = newTransaction.UserId,
                 CategoryId = newTransaction.CategoryId
@@ -85,7 +90,20 @@ namespace Services
             };
             _context.Transactions.Add(transaction);
             await _context.SaveChangesAsync();
-            return transaction;
+            return new TransactionDTO
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+                Amount = transaction.Amount,
+                Date = transaction.Date,
+                Description = transaction.Description,
+                Category = new CategoryDTO
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Type = category.Type
+                }
+            };
         }
         public async Task<decimal> GetCurrentBalanceAsync(int userId)
         {
@@ -101,35 +119,32 @@ namespace Services
             return user!.Balance + transactionsTotal;
         }
 
-        public async Task<Transaction> UpdateTransaction(CreateTransaction updateTransaction, int id)
+        public async Task<TransactionDTO> UpdateTransaction(UpdateTransaction updateTransaction, int id)
         {
-
             if (updateTransaction.Amount <= 0)
-                throw new Exception("Transaction ammount must be greater than 0");
+                throw new Exception("Transaction amount must be greater than 0");
 
-            var category = await _context.Categories.FindAsync(updateTransaction.CategoryId)
+            var transaction = await _context.Transactions
+                .Include(t => t.Category)
+                .SingleOrDefaultAsync(t => t.Id == id)
+                ?? throw new Exception("Transaction not found");
+
+            var category = await _context.Categories
+                .FindAsync(updateTransaction.CategoryId)
                 ?? throw new Exception("Category not found");
-
-            var userExists = await _context.Users.AnyAsync(u => u.Id == updateTransaction.UserId);
-            if (!userExists)
-                throw new Exception("User not found");
 
             if (category.Type == CategoryType.Expense)
             {
-                var currentBalance = await GetCurrentBalanceAsync(updateTransaction.UserId);
-                var oldTransaction = await _context.Transactions
-                    .Include(t => t.Category)
-                    .SingleOrDefaultAsync(t => t.Id == id)
-                    ?? throw new Exception("Transaction not found");
+                var currentBalance = await GetCurrentBalanceAsync(transaction.UserId);
 
-                var balanceWithoutOldTransaction = oldTransaction.Category.Type == CategoryType.Expense
-                    ? currentBalance + oldTransaction.Amount   
-                    : currentBalance - oldTransaction.Amount;  
+                var balanceWithoutOldTransaction =
+                    transaction.Category.Type == CategoryType.Expense
+                        ? currentBalance + transaction.Amount
+                        : currentBalance - transaction.Amount;
 
                 if (balanceWithoutOldTransaction < updateTransaction.Amount)
-                    throw new Exception("Not enough balance for this transaction");
+                    throw new Exception("Not enough balance");
             }
-            var transaction = await _context.Transactions.SingleOrDefaultAsync(t => t.Id == id) ?? throw new Exception("Transaction not found");
 
             transaction.Name = updateTransaction.Name;
             transaction.Amount = updateTransaction.Amount;
@@ -137,7 +152,21 @@ namespace Services
             transaction.CategoryId = updateTransaction.CategoryId;
 
             await _context.SaveChangesAsync();
-            return transaction;
+
+            return new TransactionDTO
+            {
+                Id = transaction.Id,
+                Name = transaction.Name,
+                Amount = transaction.Amount,
+                Description = transaction.Description,
+                Date = transaction.Date,
+                Category = new CategoryDTO
+                {
+                    Id = category.Id,
+                    Name = category.Name,
+                    Type = category.Type
+                }
+            };
         }
 
     }

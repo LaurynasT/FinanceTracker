@@ -13,9 +13,20 @@ namespace Services
         {
             _context = context;
         }
-        public async Task<List<UserModel>> GetUsers()
+        public async Task<List<UserDTO>> GetUsers()
         {
-            return await _context.Users.OrderBy(u => u.Id).ToListAsync();
+            return await _context.Users
+            .AsNoTracking()
+            .OrderBy(u => u.Id)
+            .Select(
+                u => new UserDTO
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    CreatedAt = u.CreatedAt,
+                }
+            )
+            .ToListAsync();
         }
 
         public async Task DeleteUser(int id)
@@ -24,7 +35,7 @@ namespace Services
             _context.Users.Remove(user);
             await _context.SaveChangesAsync();
         }
-        public async Task<UserModel> CreateUser(CreateUser newUser)
+        public async Task<UserDTO> CreateUser(CreateUser newUser)
         {
             if (newUser.Name is null)
                 throw new Exception("Bad Request");
@@ -37,18 +48,28 @@ namespace Services
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-            return user;
+            return new UserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                CreatedAt = user.CreatedAt
+            };
         }
 
-        public async Task<UserModel> UpdateUser(CreateUser updateUser, int id)
+        public async Task<UserDTO> UpdateUser(UpdateUserDTO updateUser, int id)
         {
             var user = await _context.Users.SingleOrDefaultAsync(u => u.Id == id) ?? throw new Exception("User not found");
 
             user.Name = updateUser.Name;
-            user.Balance = updateUser.Balance;
+            
 
             await _context.SaveChangesAsync();
-            return user;
+            return new UserDTO
+            {
+                Id = user.Id,
+                Name = user.Name,
+                CreatedAt = user.CreatedAt
+            };
         }
 
         
