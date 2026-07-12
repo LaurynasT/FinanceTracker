@@ -1,5 +1,4 @@
 import type { User } from "../../Interfaces/User";
-import React from "react";
 import { putUser } from "../../services/userService";
 import { useNotificationStore } from "../../store/ErrorStore";
 import { zodResolver } from "@hookform/resolvers/zod";

@@ -1,5 +1,4 @@
 import type { User } from "../../Interfaces/User";
-import React from "react";
 import { useNotificationStore } from "../../store/ErrorStore";
 import { postUser } from "../../services/userService";
 import * as z from "zod";

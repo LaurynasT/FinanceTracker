@@ -1,6 +1,6 @@
 import { useUserStore } from "../../store/UserStore";
 import { fetchData } from "../../api/Api";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import type { Transaction } from "../../Interfaces/Transaction";
 import { useNotificationStore } from "../../store/ErrorStore";
 import type { Category } from "../../Interfaces/Category";
@@ -8,7 +8,6 @@ import { updateTransaction } from "../../services/transactionService";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { useForm } from "react-hook-form";
-import { tr } from "zod/locales";
 
 type Props = {
   id: number;
@@ -27,7 +26,7 @@ export default function EditTransaction({
   const { selectedUserId } = useUserStore();
   const [category, setCategoryValue] = useState<Category[] | null>(null);
   const { showSuccess, showError } = useNotificationStore();
-  
+
   const CreateSchema = z.object({
     name: z
       .string()
